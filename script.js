@@ -11,10 +11,10 @@ function waitFor(testFx, onReady, timeOutMillis) {
             if ( (new Date().getTime() - start < maxtimeOutMillis) && !condition ) {
                 // If not time-out yet and condition not yet fulfilled
                 condition = (typeof(testFx) === "string" ? eval(testFx) : testFx()); //< defensive code
-				page.evaluate(function() {					
+				page.evaluate(function() {
 				});
             } else {
-				
+
                 if(!condition) {
 					//page.render('example.png');
                     // If condition still not fulfilled (timeout but condition is 'false')
@@ -49,10 +49,10 @@ page.open('https://mobile.bet365.com/#type=InPlay', function (status) {
 		//page.render('example.png');
 		//page.includeJs("http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js", function() {
 			// Wait for 'signin-dropdown' to be visible
-			waitFor(function() {				
-				// Check in the page if a specific element is now visible				
+			waitFor(function() {
+				// Check in the page if a specific element is now visible
 				return page.evaluate(function() {
-					console.log('IconContainer ', $("[data-nav=InPlay]").prop('outerHTML'));				
+					console.log('IconContainer ', $("[data-nav=InPlay]").prop('outerHTML'));
 					return $("[data-nav=InPlay]") != undefined;
 				});
 
@@ -71,8 +71,18 @@ page.onConsoleMessage = function(msg) {
 
  page.onLoadFinished = function(status) {
   console.log('Status finish: ' + status);
-  setTimeout(function(){	  
+  setTimeout(function(){
 	  page.render('example3.png');
+
+    page.evaluate( function() {
+        //click basketball menu
+        $("[data-cid=18]")[0].click();
+
+        //click live-inPlay basketball menu
+        $("[data-cid=18]")[0].click();
+
+    });
+
 	  phantom.exit();
   },5000)
   // Do other things here...
