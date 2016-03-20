@@ -19,106 +19,163 @@ page.customHeaders = {
 //     console.log('Request (#' + requestData.id + '): ' + requestData.url);
 // };
 page.onUrlChanged = function(targetUrl) {
-    console.log('New URL: ' + targetUrl);
+  //console.log('New URL: ' + targetUrl);
 };
 page.onLoadFinished = function(status) {
-    console.log('Load Finished: ' + status);
+  //console.log('Load Finished: ' + status);
 };
 page.onLoadStarted = function() {
-    console.log('Load Started');
+  //console.log('Load Started');
 };
 page.onNavigationRequested = function(url, type, willNavigate, main) {
-    console.log('Trying to navigate to: ' + url);
+  //console.log('Trying to navigate to: ' + url);
 };
 
 
 page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(status) {
-    console.log('status:', status);
-    if (status === "success") {
-      console.log("Exito al abrir pagina.");
-      console.log('Status finish: ' + status);
-      page.render('example3.png');
-      page.evaluate(function(){
+  //console.log('status:', status);
+  if (status === "success") {
+    console.log("sucess");
+    console.log('inject js ', page.injectJs("custom.js"));
+    //console.log("Exito al abrir pagina.");
+    //console.log('Status finish: ' + status);
 
-        function findInLiveInfoAndOdds(item, callback){
-          window.callPhantom({render: true, title: 'one'});
-          // console.log(item.textContent);
-          // item.addEventListener('click', function() {
-          //     console.log('click');
-          // });
-          //abre el detalle de cada juego deseado
-          $(item).children('[class="ipo-Fixture_GameDetail "]')[0].click();
-          setTimeout(function(){
-            //como es mobile el scoreBoard no esta visible
-            $(".ml18-TabController_Tab.ml18-TabController_Tab-Scoreboard")[0].click()
-            //console.log('search: ', '[class="ml18-ScoreboardHeaderCell "]:contains("'+item.cuartoActual+'")');
-            var puntajes = $('[class="ml18-ScoreboardHeaderCell "]:contains("'+item.cuartoActual+'")').parent().children('[class="ml18-ScoreboardCell "]');
-            //console.log(puntajes.text());
-            var puntajeLeft = parseInt(puntajes[0].textContent);
-            console.log('puntajeLeft: ', puntajeLeft);
-            var puntajeRight = parseInt(puntajes[1].textContent);
-            console.log('puntajeRight: ', puntajeRight);
+    // Wait for 'signin-dropdown' to be visible
+    waitFor(function() {
+      // Check in the page if a specific element is now visible
+      return page.evaluate(function() {
+        var in_live_play_list = $(".ipo-Fixture.ipo-Fixture_TimedFixture"),
+          length = 0;
+        if (in_live_play_list && in_live_play_list.length)
+          length = in_live_play_list.length;
+        return length > 0;
+      });
+    }, function() {
 
-            if (Math.abs(puntajeLeft - puntajeRight) > 10) {
-              // console.log(puntajeLeft, puntajeRight)
-              var equiposNombres = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppName"]');
-              var equiposValor = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppOdds "]');
-              window.callPhantom({render: true, title: new Date()});
-              console.log(equiposNombres[0].textContent + ': ' + eval(equiposValor[0].textContent) + ' ' + equiposNombres[1].textContent + ': ' + eval(equiposValor[1].textContent));
-            }
-            callback();
-          }, 8000)
+      page.evaluate(function() {
+        TIMER_LOAD_PAGE = 20000;
+        TIMER_LOAD_GAME_DETAIL = 15000;
+        String.prototype.replaceAll = function(search, replacement) {
+          var target = this;
+          return target.replace(new RegExp(search, 'g'), replacement);
+        };
+
+        function getTimeToString() {
+          var d = new Date();
+          return d.toLocaleTimeString().split(' ')[0].replaceAll(':', '');
         }
 
-        setTimeout(function() {
-          var list_like_plays = [];
+        function takeScreenShot() {
+          window.callPhantom({
+            render: true,
+            title: getTimeToString()
+          });
+        }
 
-          //retrieve times of basketball live-inPlay
-          $(".ipo-Fixture.ipo-Fixture_TimedFixture").each(function(index, item) {
+        function my_exit() {
+          window.callPhantom({
+            exit: true
+          });
+        }
+
+        takeScreenShot()
+        var list_like_plays = [];
+        //retrieve times of basketball live-inPlay
+        takeScreenShot()
+        $(".ipo-Fixture.ipo-Fixture_TimedFixture").each(function(index, item) {
             var div = $(item).find("[class='ipo-Fixture_GameInfo ']").text(),
               minuto = parseInt(div.split(':')[0]),
               cuarto = $(item).find(".ipo-Fixture_GameInfo.ipo-Fixture_GameInfo-2").text();
             //console.log('minuto:' + minuto + '\n')
             //console.log('cuarto: ' + cuarto + '\n')
-            if (minuto <= 8 && minuto > 2 && cuarto.length < 3) {
+            if (minuto <= 5 && minuto > 2 && cuarto.length < 3) {
               var cuartoActual = parseInt(cuarto.substring(1))
               item.cuartoActual = cuartoActual;
               list_like_plays.push(item);
             }
           })
           //console.log('lista: ', list_like_plays[0].textContent)
-          window.callPhantom({render: true, title: 'default'});
 
-          console.log('lista de juegos validos ' + list_like_plays.length);
+        console.log('lista de juegos candidatos ' + list_like_plays.length);
+        takeScreenShot()
 
-          if(list_like_plays.length == 0)
-                phantom.exit()
+        if (list_like_plays.length == 0)
+          my_exit();
 
-          var i = 0;
-          (function callAllInPlayGames(){
-              findInLiveInfoAndOdds(list_like_plays[i], function(){
-                console.log('call callback i:', i, ' ', list_like_plays[i].textContent);
-                if(i<list_like_plays.length){
-                  i++;
-                  callAllInPlayGames();
-                }else{
-                  phantom.exit()
-                }
+        var i = 0;
+        (function callAllInPlayGames() {
+          //console.log(list_like_plays[i].textContent + '\n');
+          findInLiveInfoAndOdds(list_like_plays[i], function() {
+            i++;
+            if (i < list_like_plays.length) {
+              callAllInPlayGames();
+            } else {
+              my_exit();
+            }
+          });
+        })()
+
+        function findInLiveInfoAndOdds(item, callback) {
+          try {
+            console.log(item.textContent);
+            // item.addEventListener('click', function() {
+            //     console.log('click');
+            // });
+            //abre el detalle de cada juego deseado
+            $(item).children('[class="ipo-Fixture_GameDetail "]')[0].click();
+            waitFor(function() {
+              // Check in the page if a specific element is now visible
+              return page.evaluate(function() {
+                var in_live_play_scoreds_list = $(".ml18-TabController_Tab.ml18-TabController_Tab-Scoreboard"),
+                  length = 0;
+                if (in_live_play_scoreds_list && in_live_play_scoreds_list.length)
+                  length = in_live_play_scoreds_list.length;
+                return length > 0;
               });
-              phantom.exit()
-          })()
-          phantom.exit()
-        }, 8000)
+            }, function() {
+              //como es mobile el scoreBoard no esta visible
+              $(".ml18-TabController_Tab.ml18-TabController_Tab-Scoreboard")[0].click()
+                //console.log('search: ', '[class="ml18-ScoreboardHeaderCell "]:contains("'+item.cuartoActual+'")');
+              var puntajes = $('[class="ml18-ScoreboardHeaderCell "]:contains("' + item.cuartoActual + '")').parent().children('[class="ml18-ScoreboardCell "]');
+              //console.log(puntajes.text());
+              var puntajeLeft = parseInt(puntajes[0].textContent);
+              //console.log('puntajeLeft: ', puntajeLeft);
+              var puntajeRight = parseInt(puntajes[1].textContent);
+              //console.log('puntajeRight: ', puntajeRight);
+              takeScreenShot();
+              if (Math.abs(puntajeLeft - puntajeRight) > 10) {
+                // console.log(puntajeLeft, puntajeRight)
+                var equiposNombres = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppName"]');
+                var equiposValor = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppOdds "]');
+                takeScreenShot()
+                console.log(equiposNombres[0].textContent + ': ' + eval(equiposValor[0].textContent) + ' ' + equiposNombres[1].textContent + ': ' + eval(equiposValor[1].textContent));
+              } else {
+                console.log('Candidato no óptimo: ', equiposNombres[0].textContent + ': ' + eval(equiposValor[0].textContent) + ' ' + equiposNombres[1].textContent + ': ' + eval(equiposValor[1].textContent));
+              }
+            })
+          } catch (err) {
+            console.log('Error', err.message);
+          } finally {
+            callback();
+          }
+        } //function findInLiveInfoAndOdds
+
+        // setTimeout(function() {
+        // }, TIMER_LOAD_PAGE)
       })
-    } else {
-      console.log("Error al abrir pagina.");
-    }
+    });
+  } else {
+    console.log("Error al abrir pagina.");
+  }
 });
 
 //cuando llamo exit desde el evaluate
 page.onCallback = function(data) {
   if (data && data.render) {
-    page.render(data.title+'.png');
+    page.render('img/' + data.title + '.png');
+  }
+  if (data && data.exit) {
+    phantom.exit();
   }
 };
 
