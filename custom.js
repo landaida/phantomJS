@@ -15,7 +15,7 @@ function waitFor(testFx, onReady, timeOutMillis) {
           phantom.exit(1);
         } else {
           // Condition fulfilled (timeout and/or condition is 'true')
-          console.log("'waitFor()' finished in " + (new Date().getTime() - start) + "ms.");
+          // console.log("'waitFor()' finished in " + (new Date().getTime() - start) + "ms.");
           typeof(onReady) === "string" ? eval(onReady): onReady(); //< Do what it's supposed to do once the condition is fulfilled
           clearInterval(interval); //< Stop this interval
         }
@@ -76,12 +76,11 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
 
       page.evaluate(function() {
         function waitFor(testFx, onReady, timeOutMillis) {
-          console.log('inside waitFor');
+          // console.log('inside waitFor');
           var maxtimeOutMillis = timeOutMillis ? timeOutMillis : 8000, //< Default Max Timout is 3s
             start = new Date().getTime(),
             condition = false,
             interval = window.setInterval(function() {
-              console.log('insdie interval');
               if ((new Date().getTime() - start < maxtimeOutMillis) && !condition) {
                 // If not time-out yet and condition not yet fulfilled
                 condition = (typeof(testFx) === "string" ? eval(testFx) : testFx()); //< defensive code
@@ -92,13 +91,13 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
                   my_exit()
                 } else {
                   // Condition fulfilled (timeout and/or condition is 'true')
-                  console.log("'waitFor()' finished in " + (new Date().getTime() - start) + "ms.");
+                  //console.log("'waitFor()' finished in " + (new Date().getTime() - start) + "ms.");
                   typeof(onReady) === "string" ? eval(onReady): onReady(); //< Do what it's supposed to do once the condition is fulfilled
                   clearInterval(interval); //< Stop this interval
                 }
               }
             }, 250); //< repeat check every 250ms
-            console.log('after var declar', maxtimeOutMillis, start, condition, interval);
+            //console.log('after var declar', maxtimeOutMillis, start, condition, interval);
         };
 
         String.prototype.replaceAll = function(search, replacement) {
@@ -124,10 +123,8 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
           });
         }
 
-        // takeScreenShot()
         var list_like_plays = [];
         //retrieve times of basketball live-inPlay
-        // takeScreenShot()
         $(".ipo-Fixture.ipo-Fixture_TimedFixture").each(function(index, item) {
             var div = $(item).find("[class='ipo-Fixture_GameInfo ']").text(),
               minuto = parseInt(div.split(':')[0]),
@@ -143,7 +140,6 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
           //console.log('lista: ', list_like_plays[0].textContent)
 
         console.log('lista de juegos candidatos ' + list_like_plays.length);
-        //takeScreenShot()
 
         if (list_like_plays.length == 0)
           my_exit();
@@ -152,7 +148,7 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
         (function callAllInPlayGames() {
           //console.log(list_like_plays[i].textContent + '\n');
           findInLiveInfoAndOdds(list_like_plays[i], function() {
-            console.log('inside callback');
+            //console.log('inside callback');
             i++;
             if (i < list_like_plays.length) {
               callAllInPlayGames();
@@ -164,14 +160,13 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
 
         function findInLiveInfoAndOdds(item, callback) {
           try {
-            console.log(item.textContent);
-            console.log('before click ', $(item).children('[class="ipo-Fixture_GameDetail "]').text());
+            // console.log(item.textContent);
+            // console.log('before click ', $(item).children('[class="ipo-Fixture_GameDetail "]').text());
             // item.addEventListener('click', function() {
             //     console.log('click');
             // });
             //abre el detalle de cada juego deseado
             $(item).children('[class="ipo-Fixture_GameDetail "]')[0].click();
-            takeScreenShot()
             waitFor(function() {
               // Check in the page if a specific element is now visible
 
@@ -179,36 +174,40 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
                 length = 0;
               if (in_live_play_scoreds_list && in_live_play_scoreds_list.length)
                 length = in_live_play_scoreds_list.length;
-              console.log(length);
               return length > 0;
 
             }, function() {
-              console.log('inside sucess secondo waitFor');
+              takeScreenShot()
               //como es mobile el scoreBoard no esta visible
               $(".ml18-TabController_Tab.ml18-TabController_Tab-Scoreboard")[0].click()
+              waitFor(function(){
+                var lista_to_find = $(".ml18-ScoreboardCell "), length = 0;
+                if (lista_to_find && lista_to_find.length)
+                  length = lista_to_find.length;
+                return length > 0;
+              }, function() {
                 //console.log('search: ', '[class="ml18-ScoreboardHeaderCell "]:contains("'+item.cuartoActual+'")');
-              var puntajes = $('[class="ml18-ScoreboardHeaderCell "]:contains("' + item.cuartoActual + '")').parent().children('[class="ml18-ScoreboardCell "]');
-              //console.log(puntajes.text());
-              var puntajeLeft = parseInt(puntajes[0].textContent);
-              //console.log('puntajeLeft: ', puntajeLeft);
-              var puntajeRight = parseInt(puntajes[1].textContent);
-              //console.log('puntajeRight: ', puntajeRight);
-              // takeScreenShot();
-              if (Math.abs(puntajeLeft - puntajeRight) > 6) {
-                // console.log(puntajeLeft, puntajeRight)
+                var puntajes = $('[class="ml18-ScoreboardHeaderCell "]:contains("' + item.cuartoActual + '")').parent().children('[class="ml18-ScoreboardCell "]');
+                //console.log(puntajes.text());
+                var puntajeLeft = parseInt(puntajes[0].textContent);
+                //console.log('puntajeLeft: ', puntajeLeft);
+                var puntajeRight = parseInt(puntajes[1].textContent);
+                //console.log('puntajeRight: ', puntajeRight);
                 var equiposNombres = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppName"]');
                 var equiposValor = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppOdds "]');
-                // takeScreenShot()
-                console.log(equiposNombres[0].textContent + ': ' + eval(equiposValor[0].textContent) + ' ' + equiposNombres[1].textContent + ': ' + eval(equiposValor[1].textContent));
-              } else {
-                console.log('Candidato no óptimo: ', equiposNombres[0].textContent + ': ' + eval(equiposValor[0].textContent) + ' ' + equiposNombres[1].textContent + ': ' + eval(equiposValor[1].textContent));
-              }
+                if (Math.abs(puntajeLeft - puntajeRight) > 6) {
+                  // console.log(puntajeLeft, puntajeRight)
+                  console.log('Candidato óptimo: ', equiposNombres[0].textContent + ': ' + eval(equiposValor[0].textContent) + ' ' + equiposNombres[1].textContent + ': ' + eval(equiposValor[1].textContent));
+                } else {
+                  console.log('Candidato NO óptimo: ', equiposNombres[0].textContent + ': ' + eval(equiposValor[0].textContent) + ' ' + equiposNombres[1].textContent + ': ' + eval(equiposValor[1].textContent));
+                }
+                callback();
+              })
             })
           } catch (err) {
             console.log('Error', err.message);
-          } finally {
             callback();
-          }
+           }
         } //function findInLiveInfoAndOdds
 
         // setTimeout(function() {
