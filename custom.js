@@ -1,7 +1,7 @@
 "use strict";
 
 function waitFor(testFx, onReady, timeOutMillis) {
-  var maxtimeOutMillis = timeOutMillis ? timeOutMillis : 120000, //< Default Max Timout is 3s
+  var maxtimeOutMillis = timeOutMillis ? timeOutMillis : 60000, //< Default Max Timout is 3s
     start = new Date().getTime(),
     condition = false,
     interval = setInterval(function() {
@@ -58,8 +58,8 @@ page.onNavigationRequested = function(url, type, willNavigate, main) {
 page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(status) {
   //console.log('status:', status);
   if (status === "success") {
-    console.log("Exito al abrir pagina.");
-    console.log('Status finish: ' + status);
+    // console.log("Exito al abrir pagina.");
+    // console.log('Status finish: ' + status);
 
     // Wait for 'signin-dropdown' to be visible
     waitFor(function() {
@@ -77,7 +77,7 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
       page.evaluate(function() {
         function waitFor(testFx, onReady, timeOutMillis) {
           // console.log('inside waitFor');
-          var maxtimeOutMillis = timeOutMillis ? timeOutMillis : 8000, //< Default Max Timout is 3s
+          var maxtimeOutMillis = timeOutMillis ? timeOutMillis : 60000, //< Default Max Timout is 3s
             start = new Date().getTime(),
             condition = false,
             interval = window.setInterval(function() {
@@ -88,6 +88,7 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
                 if (!condition) {
                   // If condition still not fulfilled (timeout but condition is 'false')
                   console.log("'waitFor()' timeout");
+                  takeScreenShot('timeout')
                   my_exit()
                 } else {
                   // Condition fulfilled (timeout and/or condition is 'true')
@@ -110,10 +111,12 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
           return d.toLocaleTimeString().split(' ')[0].replaceAll(':', '');
         }
 
-        function takeScreenShot() {
+        function takeScreenShot(first_char) {
+          var title = first_char ? first_char : '';
+          title += getTimeToString();
           window.callPhantom({
             render: true,
-            title: getTimeToString()
+            title: title
           });
         }
 
@@ -123,16 +126,21 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
           });
         }
 
+        function fractionToDecimal(number){
+          return parseFloat(eval(number)).toFixed(2)
+        }
+
         var list_like_plays = [];
         //retrieve times of basketball live-inPlay
         $(".ipo-Fixture.ipo-Fixture_TimedFixture").each(function(index, item) {
-            var div = $(item).find("[class='ipo-Fixture_GameInfo ']").text(),
-              minuto = parseInt(div.split(':')[0]),
+            var tiempo = $(item).find("[class='ipo-Fixture_GameInfo ']").text(),
+              minuto = parseInt(tiempo.split(':')[0]),
               cuarto = $(item).find(".ipo-Fixture_GameInfo.ipo-Fixture_GameInfo-2").text();
             //console.log('minuto:' + minuto + '\n')
             //console.log('cuarto: ' + cuarto + '\n')
             if (minuto <= 8 && minuto > 2 && cuarto.length < 3) {
               var cuartoActual = parseInt(cuarto.substring(1))
+              item.tiempo = tiempo;
               item.cuartoActual = cuartoActual;
               list_like_plays.push(item);
             }
@@ -149,6 +157,8 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
           //console.log(list_like_plays[i].textContent + '\n');
           findInLiveInfoAndOdds(list_like_plays[i], function() {
             //console.log('inside callback');
+            history.back(-2);
+            takeScreenShot('afterback');
             i++;
             if (i < list_like_plays.length) {
               callAllInPlayGames();
@@ -177,7 +187,6 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
               return length > 0;
 
             }, function() {
-              takeScreenShot()
               //como es mobile el scoreBoard no esta visible
               $(".ml18-TabController_Tab.ml18-TabController_Tab-Scoreboard")[0].click()
               waitFor(function(){
@@ -186,22 +195,27 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
                   length = lista_to_find.length;
                 return length > 0;
               }, function() {
-                //console.log('search: ', '[class="ml18-ScoreboardHeaderCell "]:contains("'+item.cuartoActual+'")');
-                var puntajes = $('[class="ml18-ScoreboardHeaderCell "]:contains("' + item.cuartoActual + '")').parent().children('[class="ml18-ScoreboardCell "]');
-                //console.log(puntajes.text());
-                var puntajeLeft = parseInt(puntajes[0].textContent);
-                //console.log('puntajeLeft: ', puntajeLeft);
-                var puntajeRight = parseInt(puntajes[1].textContent);
-                //console.log('puntajeRight: ', puntajeRight);
-                var equiposNombres = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppName"]');
-                var equiposValor = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppOdds "]');
-                if (Math.abs(puntajeLeft - puntajeRight) > 6) {
+                try {
+                  //console.log('search: ', '[class="ml18-ScoreboardHeaderCell "]:contains("'+item.cuartoActual+'")');
+                  var puntajes = $('[class="ml18-ScoreboardHeaderCell "]:contains("' + item.cuartoActual + '")').parent().children('[class="ml18-ScoreboardCell "]');
+                  //console.log(puntajes.text());
+                  var puntajeLeft = parseInt(puntajes[0].textContent);
+                  //console.log('puntajeLeft: ', puntajeLeft);
+                  var puntajeRight = parseInt(puntajes[1].textContent);
+                  //console.log('puntajeRight: ', puntajeRight);
+                  var equiposNombres = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppName"]');
+                  var equiposValor = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppOdds "]');
                   // console.log(puntajeLeft, puntajeRight)
-                  console.log('Candidato óptimo: ', equiposNombres[0].textContent + ': ' + eval(equiposValor[0].textContent) + ' ' + equiposNombres[1].textContent + ': ' + eval(equiposValor[1].textContent));
-                } else {
-                  console.log('Candidato NO óptimo: ', equiposNombres[0].textContent + ': ' + eval(equiposValor[0].textContent) + ' ' + equiposNombres[1].textContent + ': ' + eval(equiposValor[1].textContent));
-                }
-                callback();
+                  if (Math.abs(puntajeLeft - puntajeRight) > 6) {
+                    console.log('Candidato    óptimo('+ item.tiempo +'): ' + equiposNombres[0].textContent + '(' + puntajeLeft + ') bet: ' + fractionToDecimal(equiposValor[0].textContent) + '   ' + equiposNombres[1].textContent + '(' + puntajeRight + '): ' + fractionToDecimal(equiposValor[1].textContent));
+                  } else {
+                    console.log('Candidato NO óptimo('+ item.tiempo +'): ' + equiposNombres[0].textContent + '(' + puntajeLeft + ') bet: ' + fractionToDecimal(equiposValor[0].textContent) + '   ' + equiposNombres[1].textContent + '(' + puntajeRight + '): ' + fractionToDecimal(equiposValor[1].textContent));
+                  }
+                  callback();
+              } catch (err) {
+                  console.log('Error', err.message);
+                  callback();
+               }
               })
             })
           } catch (err) {
