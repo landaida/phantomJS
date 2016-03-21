@@ -34,10 +34,16 @@ function waitFor(testFx, onReady, timeOutMillis) {
 
 var page = require('webpage').create();
 //page.settings.userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36';
+
+//para finger que es un movil
 page.settings.userAgent = 'Mozilla/5.0 (Linux; Android 5.1.1; Nexus 6 Build/LYZ28E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36';
 page.settings.javascriptEnabled = true;
+//set browser en ingles
+page.customHeaders = {
+  "Accept-Language": "en-US,en;q=0.5"
+};
 // Open Twitter on 'sencha' profile and, onPageLoad, do...
-page.open('https://mobile.bet365.com/#type=InPlay', function(status) {
+page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(status) {
   //page.open('https://web.whatsapp.com/', function (status) {
   console.log('trying open', status);
   // Check for page load success
@@ -66,62 +72,147 @@ page.open('https://mobile.bet365.com/#type=InPlay', function(status) {
     }*/
 });
 
-
+page.onCallback = function(data) {
+  if (data.exit) {
+    page.render('imgName.png');
+    //page.render('pdfName.pdf');
+    phantom.exit();
+  }
+};
 
 page.onLoadFinished = function(status) {
   console.log('Status finish: ' + status);
   setTimeout(function() {
+    page.render('example3.png');
+    //page.evaluateAsync(function() {
+    page.evaluate(function() {
+        debugger; // step 9 will wait here in the second web browser tab
+
+
+      function objToString(obj) {
+        var str = '';
+        for (var p in obj) {
+          if (obj.hasOwnProperty(p)) {
+            str += p + '::' + obj[p] + '\n';
+          }
+        }
+        return str;
+      }
+
+      // function click(el){
+      //     var ev = document.createEvent("MouseEvent");
+      //     ev.initMouseEvent(
+      //         "click",
+      //         true /* bubble */, true /* cancelable */,
+      //         window, null,
+      //         0, 0, 0, 0, /* coordinates */
+      //         false, false, false, false, /* modifier keys */
+      //         0 /*left*/, null
+      //     );
+      //     el.dispatchEvent(ev);
+      // }
+
       var list_like_plays = [];
-      page.render('example3.png');
+      var resultado = '';
+      //pause(3000);
+      //click basketball menu
+      //$("[data-cid=18]")[0].click();
+      //click live-inPlay basketball menu
+      //$("[data-cid=18]")[0].click();
 
-      page.evaluate(function() {
-        //click basketball menu
-        $("[data-cid=18]")[0].click();
-
-        //click live-inPlay basketball menu
-        $("[data-cid=18]")[0].click();
-        console.log('hola');
-        //retrieve times of basketball live-inPlay
-        page.render('example4.png');
-        $(".ipo-Fixture.ipo-Fixture_TimedFixture").each(function(index, item) {
+      //pause(3000);
+      console.log('juegos lives de basketball', $(".ipo-Fixture.ipo-Fixture_TimedFixture").find("[class='ipo-Fixture_GameInfo ']").text());
+      //retrieve times of basketball live-inPlay
+      $(".ipo-Fixture.ipo-Fixture_TimedFixture").each(function(index, item) {
           var div = $(item).find("[class='ipo-Fixture_GameInfo ']").text(),
             minuto = parseInt(div.split(':')[0]),
-            cuarto = $(item).find("[class='ipo-Fixture_GameInfo ipo-Fixture_GameInfo-2 ']").text();
-            console.log(parseInt(div.split(':')[0]))
+            cuarto = $(item).find(".ipo-Fixture_GameInfo.ipo-Fixture_GameInfo-2").text();
+          console.log('minuto:' + minuto + '\n')
+          console.log('cuarto: ' + cuarto + ' ' + cuarto.length + '\n')
           if (minuto <= 12 && minuto > 2 && cuarto.length < 3) {
             var cuartoActual = parseInt(cuarto.substring(1))
-            console.log(parseInt(div.split(':')[0]), cuartoActual)
             item.cuartoActual = cuartoActual;
             list_like_plays.push(item);
           }
         })
-        page.render('example5.png');
-        console.log(list_like_plays)
-        list_like_plays.forEach(function(item) {
-          item.click();
-          $('[class="ml18-ScoreboardColumn "]').each(function(index, itemCuartos) {
-            var cuarto = parseInt($(itemCuartos).children('[class="ml18-ScoreboardHeaderCell "]').text()),
-              puntajes = $(itemCuartos).children('[class="ml18-ScoreboardCell "]'),
-              puntajeLeft = parseInt(puntajes[0].textContent),
-              puntajeRight = parseInt(puntajes[1].textContent);
-            if (cuarto == item.cuartoActual && Math.abs(puntajeLeft - puntajeRight) > 10) {
-              console.log(itemCuartos, cuarto, puntajeLeft, puntajeRight)
-              $('[class="ipe-Market "]').each(function(index, itemCuarto) {
-                var header = $(itemCuarto).find('[class="ipe-Market_ButtonText"]').text(),
-                  names = $(itemCuarto).find('[class="ipe-Participant_OppName"]'),
-                  values = $(itemCuarto).find('[class="ipe-Participant_OppOdds "]');
-                if (header.indexOf('Quarter - Winner (2-Way)') >= 0)
-                  console.log(header, names[0].textContent, values[0].textContent, names[1].textContent, values[1].textContent)
-              })
-            }
-          })
-        })
+        //console.log(objToString(list_like_plays[0]));
+      console.log('lista de juegos validos ' + list_like_plays.length);
+      list_like_plays.forEach(function(item) {
+        //console.log(objToString(item));
+        console.log('finish one', item.textContent);
+        //$(item).click();
 
-      });
+        var clickElement = function (el){
+            var ev = document.createEvent("MouseEvent");
+            ev.initMouseEvent(
+              "click",
+              true /* bubble */, true /* cancelable */,
+              window, null,
+              0, 0, 0, 0, /* coordinates */
+              false, false, false, false, /* modifier keys */
+              0 /*left*/, null
+            );
+            el.dispatchEvent(ev);
+        };
+        console.log('before item click');
 
-      phantom.exit();
-    }, 10000)
-    // Do other things here...
+        item.addEventListener('click', function() {
+            console.log('click');
+        });
+        // console.log('print ************');
+        // console.log(objToString(item));;
+        // console.log('print ************');
+        $(item).children('[class="ipo-Fixture_GameDetail "]')[0].click()
+        window.callPhantom({ exit: true });
+        //clickElement(item);
+
+        //setTimeout(function(){
+          //  setInterval(function () {
+              // console.log('luego del item click');
+              //
+              // var lista = $('[class="ml18-ScoreboardColumn "]');
+              // console.log('length', lista.length);
+
+              //console.log(objToString(lista[0]));
+
+
+              $('[class="ml18-ScoreboardColumn "]').forEach(function(index, itemCuartos) {
+                  console.log('dentro del puntaje ');
+                  window.callPhantom({ exit: true });
+                  var cuarto = parseInt($(itemCuartos).children('[class="ml18-ScoreboardHeaderCell "]').text()),
+                    puntajes = $(itemCuartos).children('[class="ml18-ScoreboardCell "]'),
+                    puntajeLeft = parseInt(puntajes[0].textContent),
+                    puntajeRight = parseInt(puntajes[1].textContent);
+                  console.log('dentro del puntaje cuarto:' + cuarto + ' puntajeLeft:' + puntajeLeft + ' puntajeRight: ' + puntajeRight);
+                  if (cuarto == item.cuartoActual && Math.abs(puntajeLeft - puntajeRight) > 10) {
+                    console.log(itemCuartos, cuarto, puntajeLeft, puntajeRight)
+                    resultado += itemCuartos + ';' + cuarto + ';' + puntajeLeft + ';' + puntajeRight;
+                    $('[class="ipe-Market "]').each(function(index, itemCuarto) {
+                      var header = $(itemCuarto).find('[class="ipe-Market_ButtonText"]').text(),
+                        names = $(itemCuarto).find('[class="ipe-Participant_OppName"]'),
+                        values = $(itemCuarto).find('[class="ipe-Participant_OppOdds "]');
+                      if (header.indexOf('Quarter - Winner (2-Way)') >= 0)
+                        console.log(header, names[0].textContent, values[0].textContent, names[1].textContent, values[1].textContent)
+                      resultado += header + ';' + names[0].textContent + ';' + values[0].textContent + ';' + names[1].textContent + ';' + values[1].textContent
+                    })
+                  }
+                })
+                //window.callPhantom({ exit: true });
+            //}, 5000);
+        //}, 1);
+        //setTimeout(function() {
+
+          //}, 2000)
+
+
+      })
+
+    });
+    phantom.exit();
+  }, 60000)
+
+  //debugger
+  // Do other things here...
 };
 
 page.onConsoleMessage = function(msg) {
