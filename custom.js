@@ -80,7 +80,8 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
           var maxtimeOutMillis = timeOutMillis ? timeOutMillis : 8000, //< Default Max Timout is 3s
             start = new Date().getTime(),
             condition = false,
-            interval = setInterval(function() {
+            interval = window.setInterval(function() {
+              console.log('insdie interval');
               if ((new Date().getTime() - start < maxtimeOutMillis) && !condition) {
                 // If not time-out yet and condition not yet fulfilled
                 condition = (typeof(testFx) === "string" ? eval(testFx) : testFx()); //< defensive code
@@ -97,6 +98,7 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
                 }
               }
             }, 250); //< repeat check every 250ms
+            console.log('after var declar', maxtimeOutMillis, start, condition, interval);
         };
 
         String.prototype.replaceAll = function(search, replacement) {
@@ -132,7 +134,7 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
               cuarto = $(item).find(".ipo-Fixture_GameInfo.ipo-Fixture_GameInfo-2").text();
             //console.log('minuto:' + minuto + '\n')
             //console.log('cuarto: ' + cuarto + '\n')
-            if (minuto <= 5 && minuto > 2 && cuarto.length < 3) {
+            if (minuto <= 8 && minuto > 2 && cuarto.length < 3) {
               var cuartoActual = parseInt(cuarto.substring(1))
               item.cuartoActual = cuartoActual;
               list_like_plays.push(item);
@@ -150,6 +152,7 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
         (function callAllInPlayGames() {
           //console.log(list_like_plays[i].textContent + '\n');
           findInLiveInfoAndOdds(list_like_plays[i], function() {
+            console.log('inside callback');
             i++;
             if (i < list_like_plays.length) {
               callAllInPlayGames();
@@ -162,6 +165,7 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
         function findInLiveInfoAndOdds(item, callback) {
           try {
             console.log(item.textContent);
+            console.log('before click ', $(item).children('[class="ipo-Fixture_GameDetail "]').text());
             // item.addEventListener('click', function() {
             //     console.log('click');
             // });
@@ -171,7 +175,7 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
             waitFor(function() {
               // Check in the page if a specific element is now visible
 
-              var in_live_play_scoreds_list = $(".ml18-TabController_Tab.ml18-TabController_Tab-Scoreboard"),
+              var in_live_play_scoreds_list = $(".ipe-EventViewTitle "),
                 length = 0;
               if (in_live_play_scoreds_list && in_live_play_scoreds_list.length)
                 length = in_live_play_scoreds_list.length;
@@ -190,7 +194,7 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
               var puntajeRight = parseInt(puntajes[1].textContent);
               //console.log('puntajeRight: ', puntajeRight);
               // takeScreenShot();
-              if (Math.abs(puntajeLeft - puntajeRight) > 10) {
+              if (Math.abs(puntajeLeft - puntajeRight) > 6) {
                 // console.log(puntajeLeft, puntajeRight)
                 var equiposNombres = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppName"]');
                 var equiposValor = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppOdds "]');
