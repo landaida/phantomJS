@@ -74,8 +74,10 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
       });
     }, function() {
 
-      page.evaluate(function() {
+      //page.evaluate(function() {
+      page.evaluateAsync(function() {
         function waitFor(testFx, onReady, timeOutMillis) {
+          debugger;
           // console.log('inside waitFor');
           var maxtimeOutMillis = timeOutMillis ? timeOutMillis : 60000, //< Default Max Timout is 3s
             start = new Date().getTime(),
@@ -88,7 +90,6 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
                 if (!condition) {
                   // If condition still not fulfilled (timeout but condition is 'false')
                   console.log("'waitFor()' timeout");
-                  takeScreenShot('timeout')
                   my_exit()
                 } else {
                   // Condition fulfilled (timeout and/or condition is 'true')
@@ -130,6 +131,16 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
           return parseFloat(eval(number)).toFixed(2)
         }
 
+        function objToString(obj) {
+          var str = '';
+          for (var p in obj) {
+            if (obj.hasOwnProperty(p)) {
+              str += p + '::' + obj[p] + '\n';
+            }
+          }
+          return str;
+        }
+
         var list_like_plays = [];
         //retrieve times of basketball live-inPlay
         $(".ipo-Fixture.ipo-Fixture_TimedFixture").each(function(index, item) {
@@ -138,7 +149,7 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
               cuarto = $(item).find(".ipo-Fixture_GameInfo.ipo-Fixture_GameInfo-2").text();
             //console.log('minuto:' + minuto + '\n')
             //console.log('cuarto: ' + cuarto + '\n')
-            if (minuto <= 8 && minuto > 2 && cuarto.length < 3) {
+            if (minuto <= 12 && minuto > 1 && cuarto.length < 3) {
               var cuartoActual = parseInt(cuarto.substring(1))
               item.tiempo = tiempo;
               item.cuartoActual = cuartoActual;
@@ -154,48 +165,75 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
 
         var i = 0;
         (function callAllInPlayGames() {
-          //console.log(list_like_plays[i].textContent + '\n');
+          console.log('i= ' + i + ' ' +list_like_plays[i].textContent + '\n');
           findInLiveInfoAndOdds(list_like_plays[i], function() {
-            //console.log('inside callback');
-            history.back(-2);
+            debugger;
+            console.log(window.location);
+            window.history.back();
             takeScreenShot('afterback');
-            i++;
-            if (i < list_like_plays.length) {
-              callAllInPlayGames();
-            } else {
-              my_exit();
-            }
+            waitFor(function(){
+              var lista_to_find = $(".ipo-Fixture.ipo-Fixture_TimedFixture"), length = 0;
+              if (lista_to_find && lista_to_find.length)
+                length = lista_to_find.length;
+                console.log(window.location);
+                console.log(lista_to_find[0].textContent);
+                console.log(length);
+              return length > 0;
+            },function(){
+              i++;
+              console.log('inside onReady i=' + i + ' ', $(".ipo-Fixture.ipo-Fixture_TimedFixture").length);
+              takeScreenShot('ready')
+              if (i < list_like_plays.length) {
+                callAllInPlayGames();
+              } else {
+                my_exit();
+              }
+            })
           });
         })()
 
         function findInLiveInfoAndOdds(item, callback) {
           try {
+            debugger;
             // console.log(item.textContent);
             // console.log('before click ', $(item).children('[class="ipo-Fixture_GameDetail "]').text());
-            // item.addEventListener('click', function() {
-            //     console.log('click');
-            // });
+            item.addEventListener('click', function() {
+                console.log('click');
+            });
             //abre el detalle de cada juego deseado
-            $(item).children('[class="ipo-Fixture_GameDetail "]')[0].click();
+            console.log(window.location);
+            // $(item).children('[class="ipo-Fixture_GameDetail "]')[0].click();
+            $(item).click();
+            //console.log($(item).textContent);
+            console.log(window.location);
+            console.log('after onReady');
+            takeScreenShot('afterReady')
             waitFor(function() {
+              debugger;
               // Check in the page if a specific element is now visible
-
               var in_live_play_scoreds_list = $(".ipe-EventViewTitle "),
                 length = 0;
               if (in_live_play_scoreds_list && in_live_play_scoreds_list.length)
                 length = in_live_play_scoreds_list.length;
+                // console.log('waitFor two', length, $(".ipe-EventViewTitle ")[0].textContent);
               return length > 0;
 
             }, function() {
+              debugger;
               //como es mobile el scoreBoard no esta visible
               $(".ml18-TabController_Tab.ml18-TabController_Tab-Scoreboard")[0].click()
               waitFor(function(){
+                debugger;
                 var lista_to_find = $(".ml18-ScoreboardCell "), length = 0;
                 if (lista_to_find && lista_to_find.length)
                   length = lista_to_find.length;
+                  console.log('waitFor three', length, $(".ml18-ScoreboardCell ")[0].textContent);
                 return length > 0;
               }, function() {
                 try {
+                  debugger;
+                  console.log('afterThree');
+                  takeScreenShot('afterThree')
                   //console.log('search: ', '[class="ml18-ScoreboardHeaderCell "]:contains("'+item.cuartoActual+'")');
                   var puntajes = $('[class="ml18-ScoreboardHeaderCell "]:contains("' + item.cuartoActual + '")').parent().children('[class="ml18-ScoreboardCell "]');
                   //console.log(puntajes.text());
@@ -239,6 +277,7 @@ page.onCallback = function(data) {
     page.render('img/' + data.title + '.png');
   }
   if (data && data.exit) {
+    console.log('god bye!');
     phantom.exit();
   }
 };
