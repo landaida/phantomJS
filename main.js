@@ -1,4 +1,5 @@
 "use strict";
+
 var page = require('webpage').create();
 
 //para finger que es un movil
@@ -24,13 +25,37 @@ page.onNavigationRequested = function(url, type, willNavigate, main) {
   console.log('Trying to navigate to: ' + url);
 };
 
+page.onError = function(msg, trace) {
+
+  var msgStack = ['ERROR: ' + msg];
+
+  if (trace && trace.length) {
+    msgStack.push('TRACE:');
+    trace.forEach(function(t) {
+      msgStack.push(' -> ' + t.file + ': ' + t.line + (t.function ? ' (in function "' + t.function +'")' : ''));
+    });
+  }
+
+  console.error(msgStack.join('\n'));
+
+};
 
 page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(status) {
   if (status === "success") {
     console.log("Exito al abrir pagina.");
-    if(page.injectJS('util.js')){
-      console.log('after injectJS');
+    if(phantom.injectJs('util.js')){
+      console.log('success loading util.js');
+      page.evaluate(function() {
+        try {
+          console.log('inside evaluate', arguments[0]);
+        } catch (e) {
+          console.log('Error', err.message);
+        }
+      }, waitFor);
+    }else{
+      console.log('error to load util.js');
     }
+    phantom.exit();
   }
 });
 
