@@ -40,7 +40,42 @@ page.onError = function(msg, trace) {
 
 };
 
-page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(status) {
+
+var system = require('system');
+// process args
+var args = system.args;
+
+// these args will be processed
+var argsApplicable = ['--page-url', '--user-name', '--password'];
+// populated with the valid args provided in availableArgs but like argsValid.test_id
+
+var p_url = '', p_login= '', p_password= '';
+if (args.length === 1) {
+  console.log('Try to pass some arguments when invoking this script!');
+} else {
+  args.forEach(function(arg, i) {
+    // skip first arg which is script name
+    if(i != 0) {
+      var bits = arg.split('==');
+      //console.log(i + ': ' + arg);
+      if(bits.length !=2) {
+        console.log('Arguement has wrong format: '+arg);
+      }
+        var argVar = bits[0].replace(/\-/g, '_');
+        argVar = argVar.replace(/__/, '');
+        if(argVar == "url"){
+          p_url = bits[1];
+        }else if(argVar == "login"){
+          p_login = bits[1];
+        }else if(argVar == "password"){
+          p_password = bits[1];
+        }
+    }
+  });
+}
+
+
+page.open(p_url, function(status) {
   if (status === "success") {
     console.log("Exito al abrir pagina.");
     if (phantom.injectJs('util.js')) {
@@ -50,7 +85,9 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
             my_exit = arguments[1],
             takeScreenShot = arguments[2],
             fractionToDecimal = arguments[3],
-            objToString = arguments[4];
+            objToString = arguments[4],
+            p_login = arguments[5],
+            p_password = arguments[6];
 
             waitFor(function() {
               var sought = $(".ipo-Fixture.ipo-Fixture_TimedFixture"),
@@ -68,8 +105,9 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
                 if(length > 0)
                 return length > 0;
               }, function(){
-                $('.hm-LoginPrompt_Input.hm-Login_InputUsername').val('user');
-                $('.hm-LoginPrompt_Input.hm-Login_InputPassword').val('password');
+                $('.hm-LoginPrompt_Input.hm-Login_InputUsername').val(p_login);
+                $('.hm-LoginPrompt_Input.hm-Login_InputPassword').val(p_password);
+                takeScreenShot()
                 $('[data-nav="LogInUserFromPopUp"]').click();
               })
             }, 60000)
@@ -77,7 +115,7 @@ page.open('https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', function(s
           console.log('Error', err.message);
           my_exit();
         }
-      }, waitFor, my_exit, takeScreenShot, fractionToDecimal, objToString);
+      }, waitFor, my_exit, takeScreenShot, fractionToDecimal, objToString, p_login, p_password);
 
       //debo esperar porque recarga la pagina
       setTimeout(function(){
