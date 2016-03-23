@@ -12,10 +12,11 @@ page.customHeaders = {
 };
 
 page.onUrlChanged = function(targetUrl) {
-  // console.log('New URL: ' + targetUrl);
+  console.log('New URL: ' + targetUrl);
 };
 page.onLoadFinished = function(status) {
-  // console.log('Load Finished: ' + status);
+  console.log('Load Finished: ' + status);
+  page.render('img/finished.png')
 };
 // console.log('Load Started');
 page.onLoadStarted = function() {
@@ -24,7 +25,10 @@ page.onLoadStarted = function() {
 page.onNavigationRequested = function(url, type, willNavigate, main) {
   // console.log('Trying to navigate to: ' + url);
 };
-
+page.onResourceError = function(resourceError) {
+  console.log('Unable to load resource (#' + resourceError.id + 'URL:' + resourceError.url + ')');
+  console.log('Error code: ' + resourceError.errorCode + '. Description: ' + resourceError.errorString);
+};
 page.onError = function(msg, trace) {
 
   var msgStack = ['ERROR: ' + msg];
@@ -117,22 +121,24 @@ page.open(p_url, function(status) {
         }
       }, waitFor, my_exit, takeScreenShot, fractionToDecimal, objToString, p_login, p_password);
 
+      page.render('img/beforeTemeout.png')
       //debo esperar porque recarga la pagina
-      setTimeout(function(){
         page.evaluate(function() {
+          setTimeout(function(){
           try {
             var waitFor = arguments[0],
               my_exit = arguments[1],
               takeScreenShot = arguments[2],
               fractionToDecimal = arguments[3],
               objToString = arguments[4];
+              takeScreenShot('insideSecondEvaluate')
                 waitFor(function() {
                   var sought = $(".hm-WideHeaderPod_Icon "),
                   length = 0;
                   if (sought && sought.length)
                   length = sought.length;
-                  return length > 0;
                   takeScreenShot('waitingForLogin')
+                  return length > 0;
                 }, function() {
                   takeScreenShot('after login')
                   waitFor(function() {
@@ -152,11 +158,14 @@ page.open(p_url, function(status) {
 
                     (function callAllInPlayGames() {
                       findInLiveInfoAndOdds(lista[i], function() {
-                        window.history.back();
+                        if($(".ipo-Fixture.ipo-Fixture_TimedFixture").length == 0)
+                          window.history.back();
                         waitFor(function(){
                           var sought = $(".ipo-Fixture.ipo-Fixture_TimedFixture"), length = 0;
                           if (sought && sought.length)
                           length = sought.length;
+                          console.log('selecting ');
+                          takeScreenShot('selecting')
                           return length > 0;
                         },function(){
                           lista = $(".ipo-Fixture.ipo-Fixture_TimedFixture")
@@ -238,8 +247,8 @@ page.open(p_url, function(status) {
             console.log('Error', err.message);
             my_exit();
           }
+        },15000)
         }, waitFor, my_exit, takeScreenShot, fractionToDecimal, objToString);
-      },8000)
     } else {
       console.log('error to load util.js');
     }
