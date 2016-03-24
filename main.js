@@ -225,10 +225,12 @@ page.open(p_url, function(status) {
                                     var equiposNombres = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppName"]');
                                     var equiposValor = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppOdds "]');
                                     var diferencia = Math.abs(puntajeLeft - puntajeRight);
+                                    var horario = new Date();
+                                    horario = horario.toLocaleTimeString().split(' ')[0];
                                     if (diferencia >= 10) {
-                                      console.log('Candidato    óptimo(' + item.tiempo + '): *'+ diferencia + '* ' + equiposNombres[0].textContent + '(' + puntajeLeft + ') bet: ' + toDecimal(equiposValor[0].textContent) + '   ' + equiposNombres[1].textContent + '(' + puntajeRight + '): ' + toDecimal(equiposValor[1].textContent));
+                                      console.log(horario + ' //SI óptimo(' + item.tiempo + '): *'+ diferencia + '* ' + equiposNombres[0].textContent + '(' + puntajeLeft + ') bet: ' + toDecimal(equiposValor[0].textContent) + '   ' + equiposNombres[1].textContent + '(' + puntajeRight + '): ' + toDecimal(equiposValor[1].textContent));
                                     } else {
-                                      console.log('Candidato NO óptimo(' + item.tiempo + '): *'+ diferencia + '* ' + equiposNombres[0].textContent + '(' + puntajeLeft + ') bet: ' + toDecimal(equiposValor[0].textContent) + '   ' + equiposNombres[1].textContent + '(' + puntajeRight + '): ' + toDecimal(equiposValor[1].textContent));
+                                      console.log(horario + ' //NO óptimo(' + item.tiempo + '): *'+ diferencia + '* ' + equiposNombres[0].textContent + '(' + puntajeLeft + ') bet: ' + toDecimal(equiposValor[0].textContent) + '   ' + equiposNombres[1].textContent + '(' + puntajeRight + '): ' + toDecimal(equiposValor[1].textContent));
                                     }
                                     // if(betsValueLeft > betsValueRight){
                                     //   betsValue[1].click();
