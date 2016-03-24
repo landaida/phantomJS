@@ -173,7 +173,9 @@ page.open(p_url, function(status) {
                               if (i < lista.length) {
                                 callAllInPlayGames();
                               } else {
-                                search_in_live_play();
+                                setTimeout(function(){
+                                  search_in_live_play();
+                                }, 60000)
                               }
                             })
                           });
@@ -220,10 +222,11 @@ page.open(p_url, function(status) {
                                   if (isExist.length > 0 && isExist1.length) {
                                     var equiposNombres = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppName"]');
                                     var equiposValor = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppOdds "]');
-                                    if (Math.abs(puntajeLeft - puntajeRight) >= 10) {
-                                      console.log('Candidato    óptimo(' + item.tiempo + '): ' + equiposNombres[0].textContent + '(' + puntajeLeft + ') bet: ' + fractionToDecimal(equiposValor[0].textContent) + '   ' + equiposNombres[1].textContent + '(' + puntajeRight + '): ' + fractionToDecimal(equiposValor[1].textContent));
+                                    var diferencia = Math.abs(puntajeLeft - puntajeRight);
+                                    if (diferencia >= 10) {
+                                      console.log('Candidato    óptimo(' + item.tiempo + '): *'+ diferencia + '* ' + equiposNombres[0].textContent + '(' + puntajeLeft + ') bet: ' + fractionToDecimal(equiposValor[0].textContent) + '   ' + equiposNombres[1].textContent + '(' + puntajeRight + '): ' + fractionToDecimal(equiposValor[1].textContent));
                                     } else {
-                                      console.log('Candidato NO óptimo(' + item.tiempo + '): ' + equiposNombres[0].textContent + '(' + puntajeLeft + ') bet: ' + fractionToDecimal(equiposValor[0].textContent) + '   ' + equiposNombres[1].textContent + '(' + puntajeRight + '): ' + fractionToDecimal(equiposValor[1].textContent));
+                                      console.log('Candidato NO óptimo(' + item.tiempo + '): *'+ diferencia + '* ' + equiposNombres[0].textContent + '(' + puntajeLeft + ') bet: ' + fractionToDecimal(equiposValor[0].textContent) + '   ' + equiposNombres[1].textContent + '(' + puntajeRight + '): ' + fractionToDecimal(equiposValor[1].textContent));
                                     }
                                   }
                                   callback();
