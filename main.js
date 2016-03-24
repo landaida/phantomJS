@@ -89,7 +89,7 @@ page.open(p_url, function(status) {
           var waitFor = arguments[0],
             my_exit = arguments[1],
             takeScreenShot = arguments[2],
-            fractionToDecimal = arguments[3],
+            toDecimal = arguments[3],
             objToString = arguments[4],
             p_login = arguments[5],
             p_password = arguments[6],
@@ -120,7 +120,7 @@ page.open(p_url, function(status) {
           console.log('Error', err.message);
           my_exit();
         }
-      }, waitFor, my_exit, takeScreenShot, fractionToDecimal, objToString, p_login, p_password, isLogged);
+      }, waitFor, my_exit, takeScreenShot, toDecimal, objToString, p_login, p_password, isLogged);
 
         //debo esperar porque recarga la pagina
 
@@ -133,7 +133,7 @@ page.open(p_url, function(status) {
               var waitFor = arguments[0],
                 my_exit = arguments[1],
                 takeScreenShot = arguments[2],
-                fractionToDecimal = arguments[3],
+                toDecimal = arguments[3],
                 objToString = arguments[4],
                 isLogged = arguments[5]
                 ;
@@ -220,14 +220,22 @@ page.open(p_url, function(status) {
                                   var isExist = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppName"]'),
                                   isExist1 = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppOdds "]');
                                   if (isExist.length > 0 && isExist1.length) {
+                                    // var betsValue = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant "]'),
+                                    // betsValueLeft = toDecimal(betsValue[0].textContent), betsValueRight = toDecimal(betsValue[1].textContent);
                                     var equiposNombres = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppName"]');
                                     var equiposValor = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppOdds "]');
                                     var diferencia = Math.abs(puntajeLeft - puntajeRight);
                                     if (diferencia >= 10) {
-                                      console.log('Candidato    óptimo(' + item.tiempo + '): *'+ diferencia + '* ' + equiposNombres[0].textContent + '(' + puntajeLeft + ') bet: ' + fractionToDecimal(equiposValor[0].textContent) + '   ' + equiposNombres[1].textContent + '(' + puntajeRight + '): ' + fractionToDecimal(equiposValor[1].textContent));
+                                      console.log('Candidato    óptimo(' + item.tiempo + '): *'+ diferencia + '* ' + equiposNombres[0].textContent + '(' + puntajeLeft + ') bet: ' + toDecimal(equiposValor[0].textContent) + '   ' + equiposNombres[1].textContent + '(' + puntajeRight + '): ' + toDecimal(equiposValor[1].textContent));
                                     } else {
-                                      console.log('Candidato NO óptimo(' + item.tiempo + '): *'+ diferencia + '* ' + equiposNombres[0].textContent + '(' + puntajeLeft + ') bet: ' + fractionToDecimal(equiposValor[0].textContent) + '   ' + equiposNombres[1].textContent + '(' + puntajeRight + '): ' + fractionToDecimal(equiposValor[1].textContent));
+                                      console.log('Candidato NO óptimo(' + item.tiempo + '): *'+ diferencia + '* ' + equiposNombres[0].textContent + '(' + puntajeLeft + ') bet: ' + toDecimal(equiposValor[0].textContent) + '   ' + equiposNombres[1].textContent + '(' + puntajeRight + '): ' + toDecimal(equiposValor[1].textContent));
                                     }
+                                    // if(betsValueLeft > betsValueRight){
+                                    //   betsValue[1].click();
+                                    // }else {
+                                    //   betsValue[0].click();
+                                    // }
+                                    // takeScreenShot('afterClick')
                                   }
                                   callback();
                                 } catch (e) {
@@ -248,7 +256,7 @@ page.open(p_url, function(status) {
               console.log('Error', err.message);
               my_exit();
             }
-          }, waitFor, my_exit, takeScreenShot, fractionToDecimal, objToString, isLogged);
+          }, waitFor, my_exit, takeScreenShot, toDecimal, objToString, isLogged);
         }, 60000)
     } else {
       console.log('error to load util.js');

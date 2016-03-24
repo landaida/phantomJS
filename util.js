@@ -61,6 +61,10 @@ function fractionToDecimal(number){
   return parseFloat(eval(number)).toFixed(2)
 }
 
+function toDecimal(number){
+  return parseFloat(number).toFixed(2)
+}
+
 function objToString(obj) {
   var str = '';
   for (var p in obj) {
