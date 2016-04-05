@@ -3,12 +3,24 @@ var isLogged = false;
 var page = require('webpage').create();
 
 //para finger que es un movil
-page.settings.userAgent = 'Mozilla/5.0 (Linux; Android 5.1.1; Nexus 6 Build/LYZ28E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36';
+// page.settings.userAgent = 'Mozilla/5.0 (Linux; Android 5.1.1; Nexus 6 Build/LYZ28E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36';
+//page.settings.userAgent = 'Mozilla/5.0 (iPad; CPU OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1';
+page.settings.userAgent = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36';
+// page.settings.userAgent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.71 Safari/537.36';
+// page.settings.userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.97 Safari/537.11";
+// page.settings.userAgent = "Mozilla/5.0 (Linux; U; Android 2.2.1; en-ca; LG-P505R Build/FRG83) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1";
+// page.settings.userAgent = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36";
+// page.settings.userAgent = "Mozilla/5.0 (X11; CrOS x86_64 6310.68.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.96 Safari/537.36";
 page.settings.javascriptEnabled = true;
 
 //set browser en ingles
 page.customHeaders = {
   "Accept-Language": "en-US"
+};
+
+page.viewportSize = {
+  width: 1366,
+  height: 768
 };
 
 page.onUrlChanged = function(targetUrl) {
@@ -53,37 +65,38 @@ var args = system.args;
 var argsApplicable = ['--page-url', '--user-name', '--password'];
 // populated with the valid args provided in availableArgs but like argsValid.test_id
 
-var p_url = '', p_login= '', p_password= '';
-if (args.length === 1) {
-  console.log('Try to pass some arguments when invoking this script!');
-} else {
-  args.forEach(function(arg, i) {
-    // skip first arg which is script name
-    if(i != 0) {
-      var bits = arg.split('==');
-      //console.log(i + ': ' + arg);
-      if(bits.length !=2) {
-        console.log('Arguement has wrong format: '+arg);
-      }
-        var argVar = bits[0].replace(/\-/g, '_');
-        argVar = argVar.replace(/__/, '');
-        if(argVar == "url"){
-          p_url = bits[1];
-        }else if(argVar == "login"){
-          p_login = bits[1];
-        }else if(argVar == "password"){
-          p_password = bits[1];
-        }
-    }
-  });
-}
+var p_url = 'https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', p_login= 'landaida', p_password= 'L15122012l';
+// if (args.length === 1) {
+//   console.log('Try to pass some arguments when invoking this script!');
+// } else {
+//   args.forEach(function(arg, i) {
+//     // skip first arg which is script name
+//     if(i != 0) {
+//       var bits = arg.split('==');
+//       //console.log(i + ': ' + arg);
+//       if(bits.length !=2) {
+//         console.log('Arguement has wrong format: '+arg);
+//       }
+//         var argVar = bits[0].replace(/\-/g, '_');
+//         argVar = argVar.replace(/__/, '');
+//         if(argVar == "url"){
+//           p_url = bits[1];
+//         }else if(argVar == "login"){
+//           p_login = bits[1];
+//         }else if(argVar == "password"){
+//           p_password = bits[1];
+//         }
+//     }
+//   });
+// }
 
 
 page.open(p_url, function(status) {
   if (status === "success") {
     console.log("Exito al abrir pagina.");
     if (phantom.injectJs('util.js')) {
-
+      // page.render('teste.png')
+      // page.evaluateAsync(function() {
       page.evaluate(function() {
         try {
           var waitFor = arguments[0],
@@ -128,6 +141,7 @@ page.open(p_url, function(status) {
         waitFor(function(){
           return isLogged;
         },function(){
+          // page.evaluateAsync(function() {
           page.evaluate(function() {
             try {
               var waitFor = arguments[0],
@@ -159,6 +173,7 @@ page.open(p_url, function(status) {
                         // lista.each(function(index, item) {
 
                         (function callAllInPlayGames() {
+
                           findInLiveInfoAndOdds(lista[i], function() {
                             if($(".ipo-Fixture.ipo-Fixture_TimedFixture").length == 0)
                               window.history.back();
@@ -173,12 +188,24 @@ page.open(p_url, function(status) {
                               if (i < lista.length) {
                                 callAllInPlayGames();
                               } else {
-                                setTimeout(function(){
-                                  search_in_live_play();
-                                }, 60000)
+                                // setTimeout(function(){
+                                //   var i = 0, lista = $(".ipo-Fixture.ipo-Fixture_TimedFixture");
+                                //   search_in_live_play(i, lista);
+                                // }, 60000)
+                                var searching = true;
+                                do {
+                                  var sought = $(".ipo-Fixture.ipo-Fixture_TimedFixture"), length = 0;
+                                  if (sought && sought.length)
+                                  length = sought.length;
+                                  if(length > 0){
+                                    searching = false;
+                                    search_in_live_play();
+                                  }
+                                } while (searching);
                               }
                             })
                           });
+
                         })()
 
                         function findInLiveInfoAndOdds(item, callback) {
@@ -187,67 +214,140 @@ page.open(p_url, function(status) {
                           cuarto = $(item).find(".ipo-Fixture_GameInfo.ipo-Fixture_GameInfo-2").text();
                           //console.log('minuto:' + minuto + '\n')
                           //console.log('cuarto: ' + cuarto + '\n')
-                          if (minuto <= 5 && minuto > 2 && cuarto.length < 3) {
+                          if (minuto <= 9 && minuto >= 2 && cuarto.length < 3) {
                             var cuartoActual = parseInt(cuarto.substring(1))
                             item.tiempo = tiempo;
                             item.cuartoActual = cuartoActual;
                             $(item).click();
+                            takeScreenShot()
                             // console.log(item.textContent);
                             waitFor(function() {
                               var sought = $(".ml18-MatchLiveBasketballModule_MatchLiveWrapper "),
+                                  sought2 = $('.v5.MarketGrid.ipe-MarketGrid_Classification-18 '),
                               length = 0;
-                              if (sought && sought.length)
+                              if (sought && sought.length && sought2 && sought2.length)
                               length = sought.length;
+                              takeScreenShot('waiting')
                               return length > 0;
                             }, function() {
+                              takeScreenShot('afterFirstWait')
                               $(".ml18-MatchLiveBasketballModule_AnimWrapper ")[0].click()
-                              $(".ml18-TabController_Tab.ml18-TabController_Tab-Scoreboard")[0].click()
+                              // $(".ml18-TabController_Tab.ml18-TabController_Tab-Scoreboard")[0].click()
                               waitFor(function() {
                                 var sought = $(".ml18-ScoreboardCell "),
                                 length = 0;
                                 if (sought && sought.length)
                                 length = sought.length;
+                                takeScreenShot('insdideSecondWait')
                                 return length > 0;
                               }, function() {
                                 try {
-                                  //console.log('search: ', '[class="ml18-ScoreboardHeaderCell "]:contains("'+item.cuartoActual+'")');
-                                  var puntajes = $('[class="ml18-ScoreboardHeaderCell "]:contains("' + item.cuartoActual + '")').parent().children('[class="ml18-ScoreboardCell "]');
-                                  //console.log(puntajes.text());
-                                  var puntajeLeft = parseInt(puntajes[0].textContent);
-                                  // console.log('puntajeLeft: ', puntajeLeft);
-                                  var puntajeRight = parseInt(puntajes[1].textContent);
-                                  // console.log('puntajeRight: ', puntajeRight);
-                                  var isExist = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppName"]'),
-                                  isExist1 = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppOdds "]');
-                                  if (isExist.length > 0 && isExist1.length) {
-                                    // var betsValue = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant "]'),
-                                    // betsValueLeft = toDecimal(betsValue[0].textContent), betsValueRight = toDecimal(betsValue[1].textContent);
-                                    var equiposNombres = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppName"]');
-                                    var equiposValor = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppOdds "]');
-                                    var diferencia = Math.abs(puntajeLeft - puntajeRight);
-                                    var horario = new Date();
-                                    horario = horario.toLocaleTimeString().split(' ')[0];
-                                    if (diferencia >= 10) {
-                                      console.log(horario + ' //SI óptimo(' + item.tiempo + '): *'+ diferencia + '* ' + equiposNombres[0].textContent + '(' + puntajeLeft + ') bet: ' + toDecimal(equiposValor[0].textContent) + '   ' + equiposNombres[1].textContent + '(' + puntajeRight + '): ' + toDecimal(equiposValor[1].textContent));
-                                    } else {
-                                      console.log(horario + ' //NO óptimo(' + item.tiempo + '): *'+ diferencia + '* ' + equiposNombres[0].textContent + '(' + puntajeLeft + ') bet: ' + toDecimal(equiposValor[0].textContent) + '   ' + equiposNombres[1].textContent + '(' + puntajeRight + '): ' + toDecimal(equiposValor[1].textContent));
+                                  takeScreenShot('afterSecondWait')
+                                  //Si ya no existe o no esta suspendido pasa al otro
+                                  if(!$('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")') || $('#MarketGrid > .ipe-Market_Suspended').length > 0){
+                                     callback();
+                                  }else {
+                                    //console.log('search: ', '[class="ml18-ScoreboardHeaderCell "]:contains("'+item.cuartoActual+'")');
+                                    var puntajes = $('[class="ml18-ScoreboardHeaderCell "]:contains("' + item.cuartoActual + '")').parent().children('[class="ml18-ScoreboardCell "]');
+                                    //console.log(puntajes.text());
+                                    var puntajeLeft = parseInt(puntajes[0].textContent);
+                                    // console.log('puntajeLeft: ', puntajeLeft);
+                                    var puntajeRight = parseInt(puntajes[1].textContent);
+                                    // console.log('puntajeRight: ', puntajeRight);
+                                    var isExist = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppName"]'),
+                                    isExist1 = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppOdds "]');
+                                    if (isExist.length > 0 && isExist1.length) {
+                                      // var betsValue = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant "]'),
+                                      // betsValueLeft = toDecimal(betsValue[0].textContent), betsValueRight = toDecimal(betsValue[1].textContent);
+                                      var equiposNombres = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppName"]');
+                                      var equiposValor = $('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")').parent().parent().find('[class="ipe-Participant_OppOdds "]');
+                                      var diferencia = Math.abs(puntajeLeft - puntajeRight);
+                                      var horario = new Date();
+                                      horario = horario.toLocaleTimeString().split(' ')[0];
+                                      takeScreenShot('beforeClickPlay')
+                                      if(parseFloat($('.hm-WideHeaderPod_UserBalance ').text()) >= 5 ){
+                                        takeScreenShot('exists money')
+                                        if(parseFloat(equiposValor[0].textContent) > parseFloat(equiposValor[1].textContent)){
+                                          equiposValor[1].click();
+                                        }else {
+                                          equiposValor[0].click();
+                                        }
+                                        // takeScreenShot('afterClickBet')
+                                        // takeScreenShot('afterClickBet')
+                                        // takeScreenShot('afterClickBet')
+                                        // $('#betslipBarEnhanced').click()
+                                        // takeScreenShot('afterClickToContainer')
+                                        // takeScreenShot('afterClickToContainer')
+                                        // takeScreenShot('afterClickToContainer')
+                                          waitFor(function(){
+                                            var sought = $('[data-inp-type="sngstk"]'),
+                                            length = 0;
+                                            if (sought && sought.length)
+                                            length = sought.length;
+                                            takeScreenShot('waitForContainer')
+                                            return length > 0;
+                                          },function(){
+                                            $('[data-inp-type="sngstk"]').val(0.5)
+                                            $('[data-inp-type="sngstk"]').blur()
+                                            takeScreenShot('setValue');
+                                            waitFor(function(){
+                                              var sought = $('.acceptChanges.abetslipBtn > button'), sought2 = $('.acceptChanges.abetslipBtn.hidden'),
+                                              length = 0;
+                                              if ((sought && sought.length) || (sought2 && sought2.length))
+                                              length = sought.length;
+                                              return length > 0;
+                                            }, function(){
+                                              if(!$('.acceptChanges.abetslipBtn.hidden'))
+                                                $('.acceptChanges.abetslipBtn > button').click()
+                                              waitFor(function(){
+                                                var sought = $('.placeBet.abetslipBtn > button'),
+                                                length = 0;
+                                                if (sought && sought.length)
+                                                length = sought.length;
+                                                takeScreenShot('acceptButtonWai');
+                                                return length > 0;
+                                              }, function(){
+                                                // $('.placeBet.abetslipBtn > button').click()
+                                                $('.placeBet.abetslipBtn > button').trigger( "click" );
+                                                takeScreenShot('acceptButtonClick');
+                                                waitFor(function(){
+                                                  var sought = $('.abetslipRecBtn > button'),
+                                                  length = 0;
+                                                  if (sought && sought.length)
+                                                  length = sought.length;
+                                                  takeScreenShot('continueButonWait');
+                                                  return length > 0;
+                                                }, function(){
+                                                  $('.abetslipRecBtn > button').click()
+                                                  takeScreenShot('continueButonClick');
+                                                });
+                                              });
+                                            });
+
+                                        })
+                                      }
+                                      if (diferencia >= 10) {
+                                        console.log(horario + ';;1;;' + item.tiempo + ';;'+ diferencia + ';;' + equiposNombres[0].textContent + ';;' + puntajeLeft + ';;' + toDecimal(equiposValor[0].textContent) + ';;' + equiposNombres[1].textContent + ';;' + puntajeRight + ';;' + toDecimal(equiposValor[1].textContent) + ';;' + item.cuartoActual);
+                                      } else if (diferencia >= 8 && diferencia <= 9) {
+                                        console.log(horario + ';;0;;' + item.tiempo + ';;'+ diferencia + ';;' + equiposNombres[0].textContent + ';;' + puntajeLeft + ';;' + toDecimal(equiposValor[0].textContent) + ';;' + equiposNombres[1].textContent + ';;' + puntajeRight + ';;' + toDecimal(equiposValor[1].textContent) + ';;' + item.cuartoActual);
+                                      }
+                                      // if(betsValueLeft > betsValueRight){
+                                      //   betsValue[1].click();
+                                      // }else {
+                                      //   betsValue[0].click();
+                                      // }
+                                      // takeScreenShot('afterClick')
                                     }
-                                    // if(betsValueLeft > betsValueRight){
-                                    //   betsValue[1].click();
-                                    // }else {
-                                    //   betsValue[0].click();
-                                    // }
-                                    // takeScreenShot('afterClick')
+                                    callback();
                                   }
-                                  callback();
                                 } catch (e) {
                                   console.log('Error', err.message);
                                   callback();
                                 }
                               })
-                            }, 20000)
+                            }, 60000)
                           }else{
-                            //console.log('No es un Candidato: ', item.textContent, 'minuto:' + minuto, 'cuarto: ' + cuarto);
+                            console.log('No es un Candidato: ', item.textContent, 'minuto:' + minuto, 'cuarto: ' + cuarto);
                             callback();
                           }
                         }
@@ -273,7 +373,7 @@ page.onConsoleMessage = function(msg) {
 
 page.onCallback = function(data) {
   if (data && data.render) {
-    page.render('img/' + data.title + '.png');
+    page.render(data.title + '.png');
   }
   if (data && data.exit) {
     console.log('god bye!');

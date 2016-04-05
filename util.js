@@ -1,6 +1,6 @@
 
 waitFor = function(testFx, onReady, timeOutMillis, showConsole) {
-  var maxtimeOutMillis = timeOutMillis ? timeOutMillis : 5000, //< Default Max Timout is 3s
+  var maxtimeOutMillis = timeOutMillis ? timeOutMillis : 120000, //< Default Max Timout is 3s
     start = new Date().getTime(),
     condition = false,
     interval = setInterval(function() {
@@ -43,8 +43,9 @@ waitFor = function(testFx, onReady, timeOutMillis, showConsole) {
 
 
 function takeScreenShot(first_char) {
-  var title = first_char ? first_char : '', d = new Date();
+  var title = '', d = new Date();
   title += d.toLocaleTimeString().split(' ')[0].replace(/\:/g, ' ');
+  title += first_char ? first_char : '';
   window.callPhantom({
     render: true,
     title: title
