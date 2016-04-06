@@ -43,16 +43,16 @@ page.onResourceError = function(resourceError) {
 };
 page.onError = function(msg, trace) {
 
-  var msgStack = ['ERROR: ' + msg];
-
-  if (trace && trace.length) {
-    msgStack.push('TRACE:');
-    trace.forEach(function(t) {
-      msgStack.push(' -> ' + t.file + ': ' + t.line + (t.function ? ' (in function "' + t.function+'")' : ''));
-    });
-  }
-
-  console.error(msgStack.join('\n'));
+  // var msgStack = ['ERROR: ' + msg];
+  //
+  // if (trace && trace.length) {
+  //   msgStack.push('TRACE:');
+  //   trace.forEach(function(t) {
+  //     msgStack.push(' -> ' + t.file + ': ' + t.line + (t.function ? ' (in function "' + t.function+'")' : ''));
+  //   });
+  // }
+  //
+  // console.error(msgStack.join('\n'));
 
 };
 
@@ -65,30 +65,30 @@ var args = system.args;
 var argsApplicable = ['--page-url', '--user-name', '--password'];
 // populated with the valid args provided in availableArgs but like argsValid.test_id
 
-var p_url = 'https://mobile.bet365.com/#type=InPlay;key=18;ip=1;lng=1', p_login= 'landaida', p_password= 'L15122012l';
-// if (args.length === 1) {
-//   console.log('Try to pass some arguments when invoking this script!');
-// } else {
-//   args.forEach(function(arg, i) {
-//     // skip first arg which is script name
-//     if(i != 0) {
-//       var bits = arg.split('==');
-//       //console.log(i + ': ' + arg);
-//       if(bits.length !=2) {
-//         console.log('Arguement has wrong format: '+arg);
-//       }
-//         var argVar = bits[0].replace(/\-/g, '_');
-//         argVar = argVar.replace(/__/, '');
-//         if(argVar == "url"){
-//           p_url = bits[1];
-//         }else if(argVar == "login"){
-//           p_login = bits[1];
-//         }else if(argVar == "password"){
-//           p_password = bits[1];
-//         }
-//     }
-//   });
-// }
+var p_url = '', p_login= '', p_password= '';
+if (args.length === 1) {
+  console.log('Try to pass some arguments when invoking this script!');
+} else {
+  args.forEach(function(arg, i) {
+    // skip first arg which is script name
+    if(i != 0) {
+      var bits = arg.split('==');
+      //console.log(i + ': ' + arg);
+      if(bits.length !=2) {
+        console.log('Arguement has wrong format: '+arg);
+      }
+        var argVar = bits[0].replace(/\-/g, '_');
+        argVar = argVar.replace(/__/, '');
+        if(argVar == "url"){
+          p_url = bits[1];
+        }else if(argVar == "login"){
+          p_login = bits[1];
+        }else if(argVar == "password"){
+          p_password = bits[1];
+        }
+    }
+  });
+}
 
 
 page.open(p_url, function(status) {
@@ -208,6 +208,21 @@ page.open(p_url, function(status) {
 
                         })()
 
+                        function click(el){
+                            console.log(el);
+                            var ev = document.createEvent("MouseEvent");
+                            ev.initMouseEvent(
+                                "click",
+                                true /* bubble */, true /* cancelable */,
+                                window, null,
+                                0, 0, 0, 0, /* coordinates */
+                                false, false, false, false, /* modifier keys */
+                                0 /*left*/, null
+                            );
+                            el.dispatchEvent(ev);
+                            console.log('after dispatchEvent');
+                        }
+
                         function findInLiveInfoAndOdds(item, callback) {
                           var tiempo = $(item).find("[class='ipo-Fixture_GameInfo ']").text(),
                           minuto = parseInt(tiempo.split(':')[0]),
@@ -298,18 +313,21 @@ page.open(p_url, function(status) {
                                               return length > 0;
                                             }, function(){
                                               if(!$('.acceptChanges.abetslipBtn.hidden'))
-                                                $('.acceptChanges.abetslipBtn > button').click()
+                                                // $('.acceptChanges.abetslipBtn > button').click()
+                                                console.log('acceptChanges ', $('.acceptChanges.abetslipBtn > button').trigger( "click" ));
                                               waitFor(function(){
                                                 var sought = $('.placeBet.abetslipBtn > button'),
                                                 length = 0;
                                                 if (sought && sought.length)
                                                 length = sought.length;
-                                                takeScreenShot('acceptButtonWai');
+                                                takeScreenShot('placeBetWai');
                                                 return length > 0;
                                               }, function(){
                                                 // $('.placeBet.abetslipBtn > button').click()
-                                                $('.placeBet.abetslipBtn > button').trigger( "click" );
-                                                takeScreenShot('acceptButtonClick');
+
+                                                // console.log('placeBetWait ', $('.placeBet.abetslipBtn > button').trigger( "click" ));
+                                                click($('.placeBet.abetslipBtn > button'));
+                                                takeScreenShot('placeBetClick');
                                                 waitFor(function(){
                                                   var sought = $('.abetslipRecBtn > button'),
                                                   length = 0;
