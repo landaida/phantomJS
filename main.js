@@ -93,11 +93,13 @@ if (args.length === 1) {
 
 page.open(p_url, function(status) {
   if (status === "success") {
+    debugger
     console.log("Exito al abrir pagina.");
     if (phantom.injectJs('util.js')) {
+      debugger
       // page.render('teste.png')
-      // page.evaluateAsync(function() {
-      page.evaluate(function() {
+      page.evaluateAsync(function() {
+      // page.evaluate(function() {
         try {
           var waitFor = arguments[0],
             my_exit = arguments[1],
@@ -141,8 +143,8 @@ page.open(p_url, function(status) {
         waitFor(function(){
           return isLogged;
         },function(){
-          // page.evaluateAsync(function() {
-          page.evaluate(function() {
+          page.evaluateAsync(function() {
+          // page.evaluate(function() {
             try {
               var waitFor = arguments[0],
                 my_exit = arguments[1],
@@ -280,6 +282,7 @@ page.open(p_url, function(status) {
                                       var horario = new Date();
                                       horario = horario.toLocaleTimeString().split(' ')[0];
                                       takeScreenShot('beforeClickPlay')
+                                      debugger
                                       if(parseFloat($('.hm-WideHeaderPod_UserBalance ').text()) >= 5 ){
                                         takeScreenShot('exists money')
                                         if(parseFloat(equiposValor[0].textContent) > parseFloat(equiposValor[1].textContent)){
@@ -315,6 +318,7 @@ page.open(p_url, function(status) {
                                               if(!$('.acceptChanges.abetslipBtn.hidden'))
                                                 // $('.acceptChanges.abetslipBtn > button').click()
                                                 console.log('acceptChanges ', $('.acceptChanges.abetslipBtn > button').trigger( "click" ));
+                                                debugger
                                               waitFor(function(){
                                                 var sought = $('.placeBet.abetslipBtn > button'),
                                                 length = 0;
@@ -324,7 +328,7 @@ page.open(p_url, function(status) {
                                                 return length > 0;
                                               }, function(){
                                                 // $('.placeBet.abetslipBtn > button').click()
-
+                                                debugger
                                                 // console.log('placeBetWait ', $('.placeBet.abetslipBtn > button').trigger( "click" ));
                                                 click($('.placeBet.abetslipBtn > button'));
                                                 takeScreenShot('placeBetClick');
