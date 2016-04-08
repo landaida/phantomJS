@@ -98,8 +98,8 @@ page.open(p_url, function(status) {
     if (phantom.injectJs('util.js')) {
       debugger
       // page.render('teste.png')
-      page.evaluateAsync(function() {
-      // page.evaluate(function() {
+      // page.evaluateAsync(function() {
+      page.evaluate(function() {
         try {
           var waitFor = arguments[0],
             my_exit = arguments[1],
@@ -143,15 +143,16 @@ page.open(p_url, function(status) {
         waitFor(function(){
           return isLogged;
         },function(){
-          page.evaluateAsync(function() {
-          // page.evaluate(function() {
+          // page.evaluateAsync(function() {
+          page.evaluate(function() {
             try {
               var waitFor = arguments[0],
                 my_exit = arguments[1],
                 takeScreenShot = arguments[2],
                 toDecimal = arguments[3],
                 objToString = arguments[4],
-                isLogged = arguments[5]
+                isLogged = arguments[5],
+                clickEvent = arguments[6]
                 ;
                   waitFor(function() {
                     var sought = $(".hm-WideHeaderPod_Icon "),
@@ -231,7 +232,8 @@ page.open(p_url, function(status) {
                           cuarto = $(item).find(".ipo-Fixture_GameInfo.ipo-Fixture_GameInfo-2").text();
                           //console.log('minuto:' + minuto + '\n')
                           //console.log('cuarto: ' + cuarto + '\n')
-                          if (minuto <= 9 && minuto >= 2 && cuarto.length < 3) {
+                          takeScreenShot()
+                          if (minuto <= 12 && minuto >= 2 && cuarto.length < 3) {
                             var cuartoActual = parseInt(cuarto.substring(1))
                             item.tiempo = tiempo;
                             item.cuartoActual = cuartoActual;
@@ -330,7 +332,7 @@ page.open(p_url, function(status) {
                                                 // $('.placeBet.abetslipBtn > button').click()
                                                 debugger
                                                 // console.log('placeBetWait ', $('.placeBet.abetslipBtn > button').trigger( "click" ));
-                                                click($('.placeBet.abetslipBtn > button'));
+                                                clickEvent($('.placeBet.abetslipBtn > button'));
                                                 takeScreenShot('placeBetClick');
                                                 waitFor(function(){
                                                   var sought = $('.abetslipRecBtn > button'),
@@ -380,7 +382,7 @@ page.open(p_url, function(status) {
               console.log('Error', err.message);
               my_exit();
             }
-          }, waitFor, my_exit, takeScreenShot, toDecimal, objToString, isLogged);
+          }, waitFor, my_exit, takeScreenShot, toDecimal, objToString, isLogged, clickEvent);
         }, 60000)
     } else {
       console.log('error to load util.js');
@@ -399,6 +401,12 @@ page.onCallback = function(data) {
   }
   if (data && data.exit) {
     console.log('god bye!');
+    phantom.exit();
+  }
+  if (data && data.sendEvent) {
+    page.render('antes.png');
+    page.sendEvent('click', data.rect.left + data.rect.width / 2, data.rect.top + data.rect.height / 2);
+    page.render('luego.png');
     phantom.exit();
   }
 };

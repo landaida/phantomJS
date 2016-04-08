@@ -75,3 +75,11 @@ function objToString(obj) {
   }
   return str;
 }
+
+function clickEvent(rect){
+  console.log('beforeClick');
+  window.callPhantom({
+    sendEvent: true,
+    rect:rect
+  });
+}
