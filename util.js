@@ -8,26 +8,13 @@ waitFor = function(testFx, onReady, timeOutMillis, showConsole) {
         if ((new Date().getTime() - start < maxtimeOutMillis) && !condition) {
           // If not time-out yet and condition not yet fulfilled
           condition = (typeof(testFx) === "string" ? eval(testFx) : testFx()); //< defensive code
-          if(showConsole){
-            var d = new Date()
-            ,title = 'insideWaitFor' + d.toLocaleTimeString().split(' ')[0].replace(/\:/g, ' ');
-            console.log('insideWaitFor', condition, timeOutMillis);
-            // window.callPhantom({
-            //   render: true,
-            //   title: title
-            // });
-          }
         } else {
           if (!condition) {
             // If condition still not fulfilled (timeout but condition is 'false')
             console.log("'waitFor()' timeout");
-            if(phantom)
-            phantom.exit(1);
-            else if(my_exit){
               window.callPhantom({
                 exit: true
               });
-            }
           } else {
             // Condition fulfilled (timeout and/or condition is 'true')
             // console.log("'waitFor()' finished in " + (new Date().getTime() - start) + "ms.");
@@ -77,7 +64,6 @@ function objToString(obj) {
 }
 
 function clickEvent(rect){
-  console.log('beforeClick');
   window.callPhantom({
     sendEvent: true,
     rect:rect

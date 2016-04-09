@@ -43,16 +43,16 @@ page.onResourceError = function(resourceError) {
 };
 page.onError = function(msg, trace) {
 
-  // var msgStack = ['ERROR: ' + msg];
-  //
-  // if (trace && trace.length) {
-  //   msgStack.push('TRACE:');
-  //   trace.forEach(function(t) {
-  //     msgStack.push(' -> ' + t.file + ': ' + t.line + (t.function ? ' (in function "' + t.function+'")' : ''));
-  //   });
-  // }
-  //
-  // console.error(msgStack.join('\n'));
+  var msgStack = ['ERROR: ' + msg];
+
+  if (trace && trace.length) {
+    msgStack.push('TRACE:');
+    trace.forEach(function(t) {
+      msgStack.push(' -> ' + t.file + ': ' + t.line + (t.function ? ' (in function "' + t.function+'")' : ''));
+    });
+  }
+
+  console.error(msgStack.join('\n'));
 
 };
 
@@ -93,10 +93,8 @@ if (args.length === 1) {
 
 page.open(p_url, function(status) {
   if (status === "success") {
-    debugger
     console.log("Exito al abrir pagina.");
     if (phantom.injectJs('util.js')) {
-      debugger
       // page.render('teste.png')
       // page.evaluateAsync(function() {
       page.evaluate(function() {
@@ -146,6 +144,12 @@ page.open(p_url, function(status) {
           // page.evaluateAsync(function() {
           page.evaluate(function() {
             try {
+
+              var db = openDatabase('mydb', '1.0', 'bet', 2 * 1024 * 1024);
+              db.transaction(function (tx) {
+                 tx.executeSql('CREATE TABLE IF NOT EXISTS BETS (id unique, local, visitante, cuarto)');
+              });
+
               var waitFor = arguments[0],
                 my_exit = arguments[1],
                 takeScreenShot = arguments[2],
@@ -232,13 +236,13 @@ page.open(p_url, function(status) {
                           cuarto = $(item).find(".ipo-Fixture_GameInfo.ipo-Fixture_GameInfo-2").text();
                           //console.log('minuto:' + minuto + '\n')
                           //console.log('cuarto: ' + cuarto + '\n')
-                          takeScreenShot()
-                          if (minuto <= 12 && minuto >= 2 && cuarto.length < 3) {
+                          //takeScreenShot()
+                          if (minuto <= 5 && minuto >= 2 && cuarto.length < 3) {
                             var cuartoActual = parseInt(cuarto.substring(1))
                             item.tiempo = tiempo;
                             item.cuartoActual = cuartoActual;
                             $(item).click();
-                            takeScreenShot()
+                            //takeScreenShot()
                             // console.log(item.textContent);
                             waitFor(function() {
                               var sought = $(".ml18-MatchLiveBasketballModule_MatchLiveWrapper "),
@@ -246,10 +250,10 @@ page.open(p_url, function(status) {
                               length = 0;
                               if (sought && sought.length && sought2 && sought2.length)
                               length = sought.length;
-                              takeScreenShot('waiting')
+                              //takeScreenShot('waiting')
                               return length > 0;
                             }, function() {
-                              takeScreenShot('afterFirstWait')
+                              //takeScreenShot('afterFirstWait')
                               $(".ml18-MatchLiveBasketballModule_AnimWrapper ")[0].click()
                               // $(".ml18-TabController_Tab.ml18-TabController_Tab-Scoreboard")[0].click()
                               waitFor(function() {
@@ -257,11 +261,11 @@ page.open(p_url, function(status) {
                                 length = 0;
                                 if (sought && sought.length)
                                 length = sought.length;
-                                takeScreenShot('insdideSecondWait')
+                                //takeScreenShot('insdideSecondWait')
                                 return length > 0;
                               }, function() {
                                 try {
-                                  takeScreenShot('afterSecondWait')
+                                  //takeScreenShot('afterSecondWait')
                                   //Si ya no existe o no esta suspendido pasa al otro
                                   if(!$('[class="ipe-Market_ButtonText"]:contains("Quarter - Winner (2-Way)")') || $('#MarketGrid > .ipe-Market_Suspended').length > 0){
                                      callback();
@@ -283,75 +287,73 @@ page.open(p_url, function(status) {
                                       var diferencia = Math.abs(puntajeLeft - puntajeRight);
                                       var horario = new Date();
                                       horario = horario.toLocaleTimeString().split(' ')[0];
-                                      takeScreenShot('beforeClickPlay')
                                       debugger
-                                      if(parseFloat($('.hm-WideHeaderPod_UserBalance ').text()) >= 5 ){
-                                        takeScreenShot('exists money')
-                                        if(parseFloat(equiposValor[0].textContent) > parseFloat(equiposValor[1].textContent)){
-                                          equiposValor[1].click();
-                                        }else {
-                                          equiposValor[0].click();
-                                        }
-                                        // takeScreenShot('afterClickBet')
-                                        // takeScreenShot('afterClickBet')
-                                        // takeScreenShot('afterClickBet')
-                                        // $('#betslipBarEnhanced').click()
-                                        // takeScreenShot('afterClickToContainer')
-                                        // takeScreenShot('afterClickToContainer')
-                                        // takeScreenShot('afterClickToContainer')
-                                          waitFor(function(){
-                                            var sought = $('[data-inp-type="sngstk"]'),
-                                            length = 0;
-                                            if (sought && sought.length)
-                                            length = sought.length;
-                                            takeScreenShot('waitForContainer')
-                                            return length > 0;
-                                          },function(){
-                                            $('[data-inp-type="sngstk"]').val(0.5)
-                                            $('[data-inp-type="sngstk"]').blur()
-                                            takeScreenShot('setValue');
+
+                                      if (diferencia >= 10) {
+                                        console.log(horario + ';;1;;' + item.tiempo + ';;'+ diferencia + ';;' + equiposNombres[0].textContent + ';;' + puntajeLeft + ';;' + toDecimal(equiposValor[0].textContent) + ';;' + equiposNombres[1].textContent + ';;' + puntajeRight + ';;' + toDecimal(equiposValor[1].textContent) + ';;' + item.cuartoActual);
+                                        var alreadyBet = false;
+                                        db.transaction(function (tx) {
+                                           tx.executeSql('SELECT * FROM BETS WHERE local = "'+equiposNombres[0].textContent+'" AND visitante="'+equiposNombres[1].textContent+'" AND cuarto ="'+item.cuartoActual+'"', [], function (tx, results) {
+                                              var len = results.rows.length;
+                                              if(results.rows.length > 0)
+                                                alreadyBet = true;
+                                                console.log('alreadyBet ',results.rows.item(0).local);
+                                           }, null);
+                                        },function(){console.log(arguments)});
+
+                                        if(parseFloat($('.hm-WideHeaderPod_UserBalance ').text()) >= 9 && !alreadyBet){
+                                          if(parseFloat(equiposValor[0].textContent) > parseFloat(equiposValor[1].textContent)){
+                                            equiposValor[1].click();
+                                          }else {
+                                            equiposValor[0].click();
+                                          }
                                             waitFor(function(){
-                                              var sought = $('.acceptChanges.abetslipBtn > button'), sought2 = $('.acceptChanges.abetslipBtn.hidden'),
+                                              var sought = $('[data-inp-type="sngstk"]'),
                                               length = 0;
-                                              if ((sought && sought.length) || (sought2 && sought2.length))
+                                              if (sought && sought.length)
                                               length = sought.length;
                                               return length > 0;
-                                            }, function(){
-                                              if(!$('.acceptChanges.abetslipBtn.hidden'))
-                                                // $('.acceptChanges.abetslipBtn > button').click()
-                                                console.log('acceptChanges ', $('.acceptChanges.abetslipBtn > button').trigger( "click" ));
-                                                debugger
+                                            },function(){
+                                              $('[data-inp-type="sngstk"]').val(0.5)
+                                              $('[data-inp-type="sngstk"]').blur()
+                                              takeScreenShot('setValue');
                                               waitFor(function(){
-                                                var sought = $('.placeBet.abetslipBtn > button'),
+                                                var sought = $('.acceptChanges.abetslipBtn > button'), sought2 = $('.acceptChanges.abetslipBtn.hidden'),
                                                 length = 0;
-                                                if (sought && sought.length)
+                                                if ((sought && sought.length) || (sought2 && sought2.length))
                                                 length = sought.length;
-                                                takeScreenShot('placeBetWai');
                                                 return length > 0;
                                               }, function(){
-                                                // $('.placeBet.abetslipBtn > button').click()
-                                                debugger
-                                                // console.log('placeBetWait ', $('.placeBet.abetslipBtn > button').trigger( "click" ));
-                                                clickEvent($('.placeBet.abetslipBtn > button'));
-                                                takeScreenShot('placeBetClick');
+                                                if(!$('.acceptChanges.abetslipBtn.hidden'))
+                                                  $('.acceptChanges.abetslipBtn > button').trigger( "click" );
                                                 waitFor(function(){
-                                                  var sought = $('.abetslipRecBtn > button'),
+                                                  var sought = $('.placeBet.abetslipBtn > button'),
                                                   length = 0;
                                                   if (sought && sought.length)
                                                   length = sought.length;
-                                                  takeScreenShot('continueButonWait');
                                                   return length > 0;
                                                 }, function(){
-                                                  $('.abetslipRecBtn > button').click()
-                                                  takeScreenShot('continueButonClick');
+
+                                                  bs.confirmBets()
+
+                                                  db.transaction(function (tx) {
+                                                     tx.executeSql('INSERT INTO BETS (local, visitante, cuarto) VALUES (?, ?, ?)', [equiposNombres[0].textContent, equiposNombres[1].textContent, item.cuartoActual]);
+                                                  },function(){console.log(arguments)});
+
+
+                                                  waitFor(function(){
+                                                    var sought = $('.abetslipRecBtn > button'),
+                                                    length = 0;
+                                                    if (sought && sought.length)
+                                                    length = sought.length;
+                                                    return length > 0;
+                                                  }, function(){
+                                                    $('.abetslipRecBtn > button').click()
+                                                  });
                                                 });
                                               });
-                                            });
-
-                                        })
-                                      }
-                                      if (diferencia >= 10) {
-                                        console.log(horario + ';;1;;' + item.tiempo + ';;'+ diferencia + ';;' + equiposNombres[0].textContent + ';;' + puntajeLeft + ';;' + toDecimal(equiposValor[0].textContent) + ';;' + equiposNombres[1].textContent + ';;' + puntajeRight + ';;' + toDecimal(equiposValor[1].textContent) + ';;' + item.cuartoActual);
+                                          })
+                                        }
                                       } else if (diferencia >= 8 && diferencia <= 9) {
                                         console.log(horario + ';;0;;' + item.tiempo + ';;'+ diferencia + ';;' + equiposNombres[0].textContent + ';;' + puntajeLeft + ';;' + toDecimal(equiposValor[0].textContent) + ';;' + equiposNombres[1].textContent + ';;' + puntajeRight + ';;' + toDecimal(equiposValor[1].textContent) + ';;' + item.cuartoActual);
                                       }
@@ -360,7 +362,7 @@ page.open(p_url, function(status) {
                                       // }else {
                                       //   betsValue[0].click();
                                       // }
-                                      // takeScreenShot('afterClick')
+                                      // //takeScreenShot('afterClick')
                                     }
                                     callback();
                                   }
@@ -404,9 +406,10 @@ page.onCallback = function(data) {
     phantom.exit();
   }
   if (data && data.sendEvent) {
-    page.render('antes.png');
-    page.sendEvent('click', data.rect.left + data.rect.width / 2, data.rect.top + data.rect.height / 2);
-    page.render('luego.png');
-    phantom.exit();
+    var rect = data.rect;
+    console.log('sendEvent', rect.left, rect.top, rect.width, rect.height);
+    // page.sendEvent('click', data.rect.left + 1, data.rect.top + 1);
+    page.sendEvent('click', rect.left + rect.width / 2, rect.top + rect.height / 2);
+    //phantom.exit();
   }
 };
